@@ -147,8 +147,13 @@ BEGIN
 			IF(PID IN (SELECT PID FROM Users where Users.UID = UID))THEN
 				IF(LID IN (SELECT LID FROM Laundromat)) THEN
 					IF(weight <= (SELECT weightlimit from packages where packages.PID = PID)) THEN
-						INSERT into order_details(orderID,Weight,Submission_Date,Expected_Delivery_date,UID,PID,LID) values 
-							(orderID,Weight,curdate(),date_add(curdate(),INTERVAL 2 DAY),UID,PID,LID);
+						IF((SELECT users.washesused from users where users.UID = UID) < (SELECT packages.maxwashes from packages where packages.PID = PID)) THEN
+							INSERT into order_details(orderID,Weight,Submission_Date,Expected_Delivery_date,UID,PID,LID) values 
+								(orderID,Weight,curdate(),date_add(curdate(),INTERVAL 2 DAY),UID,PID,LID);
+							UPDATE users SET users.washesused = users.washesused + 1 where users.UID = UID;
+						ELSE
+							SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'WASH LIMIT EXCEEDED!';
+						END IF;
 					ELSE
 						SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'WEIGHT LIMIT EXCEEDED!';
 					END IF;
@@ -276,9 +281,9 @@ insert into packages
 			('P004',6,8,3000,'2022-01-01','2022-05-22',True);
           
 insert into users
-	values ('U001','Anish','Kasegaonkar','Shankar 2124 BITS Pilani','8989898989','helloak@gmail.com','M',0,'P001'),
-		   ('U002','Anisha','Kasegaonkar','Meera 2124 BITS Pilani','8989898984','helloak@gmail.com','F',0,'P002'),
-           ('U003','Kartik','Kumar','Budh 2122 BITS Pilani','8989898489','hellokk@gmail.com','M',0,'P004');
+	values ('U001','password','Anish','Kasegaonkar','Shankar 2124 BITS Pilani','8989898989','helloak@gmail.com','M',2,'P001'),
+		   ('U002','password','Anisha','Kasegaonkar','Meera 2124 BITS Pilani','8989898984','helloak@gmail.com','F',2,'P002'),
+           ('U003','password','Kartik','Kumar','Budh 2122 BITS Pilani','8989898489','hellokk@gmail.com','M',2,'P004');
            
 insert into order_details
 	values ('ORD001',5,True,'2022-01-15','2022-01-17','2022-01-17','U001','P001','L001'),
@@ -288,11 +293,15 @@ insert into order_details
             ('ORD005',6,True,'2022-03-18','2022-03-20','2022-03-22','U002','P002','L001'),
             ('ORD006',7,False,'2022-03-15','2022-03-17',NULL,'U003','P004','L002');
             
-CALL add_order('ORD007',2,'U002','P002','L001');  
+CALL add_order('ORD007',2,'U002','P002','L001');
+CALL add_order('ORD008',3,'U001','P001','L002');  
 -- CALL add_order('ORD009',12,'U002','P002','L001');  -- weight limit exceed error
 
 CALL get_status('ORD008','U002');
 SELECT orderID, is_overdue(order_details.orderID) as 'IS_OVERDUE?', count_overdue_days(order_details.orderID) as 'NO_OF_DAYS' from order_details;
+
+-- delete from users;
+-- delete from order_details;
 
 -- delete from order_details where orderID = 'ORD008';         
 -- delete from employee where EID = 'E001'; 
