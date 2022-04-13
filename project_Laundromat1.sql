@@ -79,7 +79,7 @@ CREATE TABLE Users
     LastName Varchar(20) Default NULL,
     Address Varchar(100) NOT NULL,
 	Phone Varchar(10) NOT NULL,
-	Email Varchar(50),
+	Email Varchar(50) NOT NULL UNIQUE,
     Sex char NOT NULL,
 	WashesUsed INT default 0,
 	PID Varchar(20) NOT NULL,
@@ -282,7 +282,7 @@ insert into packages
           
 insert into users
 	values ('U001','password','Anish','Kasegaonkar','Shankar 2124 BITS Pilani','8989898989','helloak@gmail.com','M',2,'P001'),
-		   ('U002','password','Anisha','Kasegaonkar','Meera 2124 BITS Pilani','8989898984','helloak@gmail.com','F',2,'P002'),
+		   ('U002','password','Anisha','Kasegaonkar','Meera 2124 BITS Pilani','8989898984','helloakm@gmail.com','F',2,'P002'),
            ('U003','password','Kartik','Kumar','Budh 2122 BITS Pilani','8989898489','hellokk@gmail.com','M',2,'P004');
            
 insert into order_details
